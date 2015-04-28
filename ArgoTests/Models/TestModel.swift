@@ -18,7 +18,7 @@ extension TestModel: Decodable {
   }
 
   static func decode(j: JSON) -> Decoded<TestModel> {
-    return TestModel.create
+    let f = TestModel.create
       <^> j <| "numerics"
       <*> j <| ["user_opt", "name"]
       <*> j <| "bool"
@@ -26,7 +26,18 @@ extension TestModel: Decodable {
       <*> j <||? "string_array_opt"
       <*> j <|| ["embedded", "string_array"]
       <*> j <||? ["embedded", "string_array_opt"]
-      <*> j <|? "user_opt"
+
+    let x: Decoded<TestModel> = apply(f, (j <|? "user_opt") as Decoded<User?>)
+
+    return x
+  }
+}
+
+func apply(f: Decoded<User? -> TestModel>, t: Decoded<User?>) -> Decoded<TestModel> {
+  switch f {
+  case .Success(let box): return t.map(box.value)
+  case .MissingKey(let s): return .MissingKey(s)
+  case .TypeMismatch(let s): return .TypeMismatch(s)
   }
 }
 
