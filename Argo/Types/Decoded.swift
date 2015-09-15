@@ -113,3 +113,17 @@ public func <^> <A, B>(f: A -> B, a: Decoded<A>) -> Decoded<B> {
 public func <*> <A, B>(f: Decoded<A -> B>, a: Decoded<A>) -> Decoded<B> {
   return a.apply(f)
 }
+
+// MARK: Alternative operator
+/**
+  Return LHS `Decoded` value if it's `.Success`, otherwise return RHS.
+*/
+
+infix operator <|> { associativity left precedence 140 }
+
+public func <|><A>(lhs: Decoded<A>, rhs: Decoded<A>) -> Decoded<A> {
+  if case .Success = lhs {
+    return lhs
+  }
+  return rhs
+}
